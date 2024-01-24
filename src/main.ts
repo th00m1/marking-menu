@@ -5,7 +5,8 @@ export type Position = { x: number; y: number };
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const menu = new Menu(
-  document.getElementsByClassName("menu")[0] as HTMLElement
+  document.querySelector(".menu") as HTMLElement,
+  document.querySelector(".sub-menu") as HTMLElement
 );
 
 let isDrawing = false;
@@ -28,7 +29,7 @@ document.addEventListener("mouseup", async () => {
 
   isDrawing = false;
   await sleep(1);
-  menu.closeMenu();
+  menu.closeAll();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
@@ -37,15 +38,53 @@ document.addEventListener("mousemove", (event) => {
 
   resetHoldTimer();
 
-  ctx.beginPath();
-  ctx.lineWidth = 4;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.strokeStyle = "black";
-  ctx.moveTo(cursorPosition.x, cursorPosition.y);
-  cursorPosition = getCursorPosition(event);
-  ctx.lineTo(cursorPosition.x, cursorPosition.y);
-  ctx.stroke();
+  if (menu.isOpen()) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (menu.isSubMenuOpen()) {
+      ctx.beginPath();
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "black";
+      ctx.moveTo(menu.getPosition().x, menu.getPosition().y);
+      ctx.lineTo(menu.getSubMenuPosition().x, menu.getSubMenuPosition().y);
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "black";
+    const { x, y } = menu.isSubMenuOpen()
+      ? menu.getSubMenuPosition()
+      : menu.getPosition();
+    ctx.moveTo(x, y);
+    cursorPosition = getCursorPosition(event);
+    ctx.lineTo(cursorPosition.x, cursorPosition.y);
+    menu.setItemHoverClass(cursorPosition);
+
+    const selectedItem = menu.getItemActive(cursorPosition);
+
+    if (selectedItem) {
+      menu.closeMenu();
+      menu.openSubMenu(selectedItem.itemCenter);
+    }
+
+    ctx.stroke();
+  }
+
+  if (!menu.isOpen()) {
+    ctx.beginPath();
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "black";
+    ctx.moveTo(cursorPosition.x, cursorPosition.y);
+    cursorPosition = getCursorPosition(event);
+    ctx.lineTo(cursorPosition.x, cursorPosition.y);
+    ctx.stroke();
+  }
 });
 
 window.addEventListener("resize", () => {
