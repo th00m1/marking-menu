@@ -1,4 +1,5 @@
 import { Menu } from "./menu";
+import { Toaster } from "./toaster";
 
 export type Position = { x: number; y: number };
 
@@ -8,6 +9,7 @@ const menu = new Menu(
   document.querySelector(".menu") as HTMLElement,
   document.querySelector(".sub-menu") as HTMLElement
 );
+const toaster = new Toaster(document.getElementById("toasters") as HTMLElement);
 
 let isDrawing = false;
 let cursorPosition: Position = { x: 0, y: 0 };
@@ -66,7 +68,11 @@ document.addEventListener("mousemove", (event) => {
 
     const selectedItem = menu.getItemActive(cursorPosition);
 
-    if (selectedItem) {
+    if (selectedItem && menu.isSubMenuOpen()) {
+      const selected = menu.setSelectedItem(selectedItem.direction);
+      toaster.success(selected);
+      menu.closeAll();
+    } else if (selectedItem) {
       menu.closeMenu();
       menu.openSubMenu(selectedItem.itemCenter);
     }

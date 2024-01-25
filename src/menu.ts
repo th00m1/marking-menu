@@ -3,14 +3,28 @@ import { Position } from "./main";
 export class Menu {
   private menu: HTMLElement;
   private items: Element[];
+  private subItems: Element[];
   private subMenu: HTMLElement;
   private position: Position = { x: 0, y: 0 };
   private subMenuPosition: Position = { x: 0, y: 0 };
+  private selectedItem: string | undefined;
 
   constructor(menu: HTMLElement, subMenu: HTMLElement) {
     this.menu = menu;
     this.items = [...this.menu.querySelectorAll(".item")];
     this.subMenu = subMenu;
+    this.subItems = [...this.subMenu.querySelectorAll(".sub-menu__item")];
+  }
+
+  getSelectedItem() {
+    return this.selectedItem;
+  }
+
+  setSelectedItem(direction: number) {
+    const item = this.subItems[direction];
+    const text = item.innerHTML;
+    this.selectedItem = text;
+    return text;
   }
 
   displayMenu() {
@@ -67,7 +81,7 @@ export class Menu {
     cursor: Position
   ): { direction: number; itemCenter: Position } | null {
     const direction = this.getItemHover(cursor);
-    const threshold = 10;
+    const threshold = 20;
     const itemCenter = this.getItemCenter(direction);
     const distanceToItem = Math.hypot(
       Math.abs(cursor.x - itemCenter.x),
@@ -114,7 +128,9 @@ export class Menu {
   }
 
   private getItemCenter(direction: number): Position {
-    const item = this.items[direction];
+    const items = this.isSubMenuOpen() ? this.subItems : this.items;
+    const item = this.isSubMenuOpen() ? items[direction] : items[direction];
+
     const rect = item.getBoundingClientRect();
     return {
       x: rect.left + rect.width / 2,
