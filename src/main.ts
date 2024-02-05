@@ -14,6 +14,7 @@ const toaster = new Toaster(document.getElementById("toasters") as HTMLElement);
 let isDrawing = false;
 let cursorPosition: Position = { x: 0, y: 0 };
 let holdTimer: ReturnType<typeof setTimeout> | null = null;
+let points: Position[] = [];
 
 document.addEventListener("mousedown", (event) => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -28,10 +29,22 @@ document.addEventListener("mousedown", (event) => {
 
 document.addEventListener("mouseup", async () => {
   resetHoldTimer();
-
   isDrawing = false;
+
   await sleep(1);
-  menu.closeAll();
+
+  if (menu.isOpen()) {
+    menu.closeAll();
+  } else {
+    const res = determineShape(
+      points[0],
+      points[Math.round(points.length / 2)],
+      points[points.length - 1]
+    );
+    toaster.success(res);
+  }
+
+  points = [];
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
@@ -87,6 +100,7 @@ document.addEventListener("mousemove", (event) => {
     ctx.lineJoin = "round";
     ctx.strokeStyle = "black";
     ctx.moveTo(cursorPosition.x, cursorPosition.y);
+    points.push({ x: cursorPosition.x, y: cursorPosition.y });
     cursorPosition = getCursorPosition(event);
     ctx.lineTo(cursorPosition.x, cursorPosition.y);
     ctx.stroke();
@@ -120,3 +134,45 @@ const resetHoldTimer = () => {
 };
 
 resizeCanvas();
+
+const determineShape = (start: Position, mid: Position, end: Position) => {
+  if (isHorizontalLine(start, mid, end)) {
+    if (start.x < end.x) {
+      console.log("H line from left to right");
+    } else {
+      console.log("H line from right to left");
+    }
+  } else if (isVerticalLine(start, mid, end)) {
+    if (start.y > end.y) {
+      console.log("V line from bottom to top");
+    } else {
+      console.log("V line from top to bottom");
+    }
+  } else if (start.x < end.x && start.y < end.y) {
+    console.log("bottom right");
+  } else if (start.x < end.x && start.y > end.y) {
+    console.log("top right");
+  } else if (start.x > end.x && start.y > end.y) {
+    console.log("top left");
+  } else if (start.x > end.x && start.y < end.y) {
+    console.log("bottom left");
+  }
+
+  return "";
+};
+
+const isHorizontalLine = (start: Position, mid: Position, end: Position) => {
+  const tolerance = 50;
+  return (
+    Math.abs(start.y - mid.y) <= tolerance &&
+    Math.abs(start.y - end.y) <= tolerance
+  );
+};
+
+const isVerticalLine = (start: Position, mid: Position, end: Position) => {
+  const tolerance = 50;
+  return (
+    Math.abs(start.x - mid.x) <= tolerance &&
+    Math.abs(start.x - end.x) <= tolerance
+  );
+};
