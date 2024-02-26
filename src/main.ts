@@ -138,24 +138,24 @@ resizeCanvas();
 const determineShape = (start: Position, mid: Position, end: Position) => {
   if (isHorizontalLine(start, mid, end)) {
     if (start.x < end.x) {
-      console.log("H line from left to right");
+      return "Sub Item 2";
     } else {
-      console.log("H line from right to left");
+      return "Sub Item 4";
     }
   } else if (isVerticalLine(start, mid, end)) {
     if (start.y > end.y) {
-      console.log("V line from bottom to top");
+      return "Sub Item 1";
     } else {
-      console.log("V line from top to bottom");
+      return "Sub Item 3";
     }
   } else if (start.x < end.x && start.y < end.y) {
-    console.log("bottom right");
+    return "Sub Item 2";
   } else if (start.x < end.x && start.y > end.y) {
-    console.log("top right");
+    return "Sub Item 2";
   } else if (start.x > end.x && start.y > end.y) {
-    console.log("top left");
+    return "Sub Item 4";
   } else if (start.x > end.x && start.y < end.y) {
-    console.log("bottom left");
+    return "Sub Item 4";
   }
 
   return "";
